@@ -1,0 +1,278 @@
+---
+import Base from '../layouts/Base.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import Media from '../components/Media.astro';
+import { SITE } from '../data/site';
+import { getAll, fmtRange } from '../lib/content';
+
+const { work, education } = await getAll();
+const featured = work.filter((w) => w.data.kind !== 'teaching');
+const teaching = work.filter((w) => w.data.kind === 'teaching');
+---
+
+<Base title={`${SITE.name} — ${SITE.role}`}>
+  <ThemeToggle />
+
+  <div class="shell">
+    <aside class="rail">
+      <div class="rail-inner">
+        <img class="avatar" src="/photo.png" alt={SITE.name} width="88" height="88" />
+        <h1>{SITE.name}</h1>
+        <p class="rail-email">{SITE.email.replace('@', ' (at) ')}</p>
+        <p class="rail-role">{SITE.role}</p>
+        <p class="rail-tag">{SITE.tagline}</p>
+
+        <nav class="rail-nav">
+          <a href="#about">About</a>
+          <a href="#education">Education</a>
+          <a href="#experience">Experience</a>
+          <a href="#teaching">Teaching</a>
+        </nav>
+
+        <div class="rail-links">
+          <a href={SITE.links.github}>GitHub</a>
+          <a href={SITE.links.linkedin}>LinkedIn</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="section" id="about">
+        <h2>About</h2>
+        {SITE.intro.map((p) => <p class="intro" set:html={p} />)}
+      </section>
+
+      <section class="section" id="education">
+        <h2>Education</h2>
+        {
+          education.map((e) => (
+            <article class="line">
+              <div class="line-main">
+                <span class="line-org">{e.data.org}</span>
+                <span class="line-role">{e.data.degree}</span>
+              </div>
+              <span class="dates">{fmtRange(e.data.start, e.data.end)}</span>
+            </article>
+          ))
+        }
+      </section>
+
+      <section class="section" id="experience">
+        <h2>Experience</h2>
+        {
+          featured.map((w) => (
+            <article class="line">
+              <div class="line-main">
+                <span class="line-org">{w.data.org}</span>
+                <span class="line-role">{w.data.role}</span>
+              </div>
+              <span class="dates">{fmtRange(w.data.start, w.data.end)}</span>
+              <div class="line-tags">
+                {w.data.tags.map((t) => (
+                  <span class="tag">{t}</span>
+                ))}
+              </div>
+              {w.data.gifs.length > 0 && (
+                <div class="media-row">
+                  {w.data.gifs.map((g) => (
+                    <Media src={g} alt={`${w.data.org} demo`} ratio="16 / 9" />
+                  ))}
+                </div>
+              )}
+            </article>
+          ))
+        }
+      </section>
+
+      <section class="section" id="teaching">
+        <h2>Teaching</h2>
+        {
+          teaching.map((w) => (
+            <article class="line">
+              <div class="line-main">
+                <span class="line-org">{w.data.org}</span>
+                <span class="line-role">{w.data.role}</span>
+              </div>
+              <span class="dates">{fmtRange(w.data.start, w.data.end)}</span>
+            </article>
+          ))
+        }
+      </section>
+
+      <footer class="foot">© {new Date().getFullYear()} {SITE.name}</footer>
+    </main>
+  </div>
+</Base>
+<style>
+  .shell {
+    display: grid;
+    grid-template-columns: 13.5rem minmax(0, 1fr);
+    gap: 3rem;
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 0;
+    align-items: start;
+  }
+
+  /* Rail */
+  .rail { position: sticky; top: 2.5rem; }
+  .rail-inner { display: flex; flex-direction: column; align-items: flex-start; }
+  .avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    margin-bottom: 0.9rem;
+  }
+  h1 { margin: 0 0 0.3rem; font-size: 1.22rem; letter-spacing: -0.02em; font-weight: 700; line-height: 1.25; }
+  .rail-role { margin: 0 0 0.15rem; font-size: 0.82rem; color: var(--accent); font-weight: 550; }
+  .rail-tag { margin: 0 0 1.4rem; font-size: 0.82rem; color: var(--muted); }
+
+  .rail-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    margin-bottom: 1.4rem;
+    width: 100%;
+  }
+  .rail-nav a {
+    color: var(--muted);
+    font-size: 0.86rem;
+    padding: 0.3rem 0;
+    border-left: 2px solid transparent;
+    padding-left: 0.7rem;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .rail-nav a:hover { color: var(--fg); text-decoration: none; border-color: var(--accent); }
+
+  .rail-links { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .rail-links a {
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    color: var(--muted);
+  }
+  .rail-links a:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+  .rail-email {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    color: var(--muted);
+  }
+
+  /* Content */
+  .content { padding-bottom: 3rem; min-width: 0; }
+  .section { padding: 0 0 2.8rem; scroll-margin-top: 2rem; }
+  h2 {
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    font-weight: 650;
+    margin: 0 0 1.3rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .intro { margin: 0; font-size: 1.02rem; line-height: 1.72; }
+  .intro + .intro { margin-top: 0.75rem; }
+  .intro a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+
+  .entry { margin-bottom: 2rem; }
+  .entry:last-child { margin-bottom: 0; }
+  .entry-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  h3 { margin: 0; font-size: 1.05rem; letter-spacing: -0.015em; font-weight: 650; }
+  .role { margin: 0.1rem 0 0; font-size: 0.85rem; color: var(--accent); font-weight: 550; }
+  .dates {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  .sum { margin: 0.5rem 0 0.5rem; font-size: 0.93rem; color: var(--muted); }
+  .bullets {
+    margin: 0.4rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.92rem;
+  }
+  .bullets li { margin-bottom: 0.28rem; }
+  /* Experience — Soroush-style one-liners with tags */
+  .line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  }
+  .line:last-child { border-bottom: 0; }
+  .line-main {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .line-org {
+    font-weight: 650;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+  .line-role { color: var(--muted); font-size: 0.9rem; }
+  .line .dates { margin: 0; }
+  .line-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.28rem;
+    margin-top: 0.35rem;
+    grid-column: 1 / -1;
+  }
+  .tag {
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.05rem 0.45rem;
+  }
+  .media-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.6rem;
+    margin: 0.6rem 0 0.3rem;
+    grid-column: 1 / -1;
+  }
+
+  .foot {
+    padding-top: 1.6rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  @media (max-width: 720px) {
+    .shell { grid-template-columns: 1fr; gap: 2rem; padding: 2.5rem 1.25rem 0; }
+    .rail { position: static; text-align: center; }
+    .rail-inner { align-items: center; }
+    .rail-nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.9rem;
+    }
+    .rail-nav a { border-left: 0; padding-left: 0; }
+    .rail-nav a:hover { border-color: transparent; }
+    .rail-links { justify-content: center; }
+    h1 { font-size: 1.6rem; }
+  }
+</style>
